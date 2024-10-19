@@ -1,27 +1,30 @@
+/// <reference path="./types/express.d.ts" />
+
 import express from 'express';
 import dotenv from 'dotenv';
-import mongoose from 'mongoose';
+import cors from 'cors';
+
+import connectDB from './config/db'; 
+import config from './config/config';
+import authRoutes from './routes/authRoutes';
 
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 11111;
 
-// ? Connect to MongoDB
-mongoose
-  .connect(process.env.MONGO_URI as string)
-  .then(() => {
-    console.log('Connected to MongoDB');
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+app.use(cors());
+app.use(express.json());
+connectDB();
 
-// ? Routes base
+// ? Routes auth
+app.use('/api', authRoutes);
+
+// ? Home
 app.get('/', (req, res) => {
   res.send('REST API Students');
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// ? Start server
+app.listen(config.port, () => {
+  console.log(`Server running on port ${config.port}`);
 });
