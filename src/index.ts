@@ -4,9 +4,11 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 
-import connectDB from './config/db'; 
+import connectDB from './config/db';
 import config from './config/config';
+
 import authRoutes from './routes/authRoutes';
+import studentRoutes from './routes/studentRoutes';
 
 dotenv.config();
 
@@ -18,6 +20,9 @@ connectDB();
 
 // ? Routes auth
 app.use('/api', authRoutes);
+
+// ? Routes student
+app.use('/api', studentRoutes);
 
 // ? Home
 app.get('/', (req, res) => {
