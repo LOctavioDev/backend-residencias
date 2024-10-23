@@ -5,7 +5,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 interface IStudent extends Document {
   control_number: string;
   name: {
-    firts: string;
+    first: string;
     last: string;
     middle?: string;
   };
@@ -50,7 +50,7 @@ interface IStudent extends Document {
 const StudentSchema: Schema = new Schema({
   control_number: { type: String, required: true, unique: true },
   name: {
-    firts: { type: String, required: true },
+    first: { type: String, required: true },
     last: { type: String, required: true },
     middle: String,
   },
