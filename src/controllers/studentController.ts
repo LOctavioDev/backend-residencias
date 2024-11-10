@@ -14,14 +14,18 @@ export const createStudent = async (req: Request, res: Response) => {
 };
 
 // * GET ALL STUDENTS
-export const getAllStudents = async (req: Request, res: Response) => {
+
+export const getAllStudents = async (req: Request, res: Response): Promise<void> => {
   try {
+    const userId = req.userId;  
+
     const students = await Student.find();
     res.status(200).json(students);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 // * GET SINGLE STUDENT
 export const getStudent = async (req: Request, res: Response) => {

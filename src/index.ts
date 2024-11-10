@@ -19,7 +19,7 @@ app.use(express.json());
 connectDB();
 
 // ? Routes auth
-app.use('/api', authRoutes);
+app.use('/auth', authRoutes);
 
 // ? Routes student
 app.use('/api', studentRoutes);
