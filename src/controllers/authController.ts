@@ -17,7 +17,6 @@ export const googleAuth = async (req: Request, res: Response): Promise<void> => 
     });
 
     const payload = ticket.getPayload();
-    console.log(payload);
 
     if (!payload || !payload.email) {
       res.status(400).json({ error: 'Google authentication failed' });
@@ -35,10 +34,8 @@ export const googleAuth = async (req: Request, res: Response): Promise<void> => 
       await user.save();
     }
 
-    // Una vez creado o encontrado el usuario, generamos el token
     const token = generateToken(user._id as mongoose.Types.ObjectId).toString();
     
-    // Solo enviamos la respuesta una vez
     res.json({ token });
 
   } catch (error) {

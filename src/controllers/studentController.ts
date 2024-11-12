@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import  { Request, Response } from 'express';
 import Student from '../models/Student';
 
 // * CREATE A NEW STUDENT
@@ -6,9 +6,12 @@ import Student from '../models/Student';
 export const createStudent = async (req: Request, res: Response) => {
   try {
     const student = new Student(req.body);
+    console.log(student);
+    
     await student.save();
     res.status(201).json(student);
   } catch (error: any) {
+    console.log(error);
     res.status(500).json({ error: error.message });
   }
 };

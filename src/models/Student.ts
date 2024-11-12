@@ -65,7 +65,7 @@ const StudentSchema: Schema = new Schema({
     },
   },
   activity: {
-    acitivies: { type: [String], required: true },
+    activities: { type: [String], required: true }, // Corrige aquí
   },
   company: {
     name: { type: String, required: true },
@@ -79,7 +79,7 @@ const StudentSchema: Schema = new Schema({
     job_type: { type: String, required: true },
   },
   employment_status: {
-    types: { type: [String], required: true },
+    type: { type: [String], required: true }, // Corrige aquí
   },
   sector: {
     category: { type: String, required: true },
