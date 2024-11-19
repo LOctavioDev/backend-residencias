@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-// ! DEFINE THE INTERFACE FOR THE STUDENT DPCUMENT
+// ! DEFINE THE INTERFACE FOR THE STUDENT DOCUMENT
 
 interface IStudent extends Document {
   control_number: string;
@@ -10,15 +10,8 @@ interface IStudent extends Document {
     middle?: string;
   };
   generation: {
-    start: {
-      year: number;
-      semester: string;
-    };
-
-    end: {
-      year: number;
-      semester: string;
-    };
+    startDate: number;
+    endDate: number;
   };
   activity: string[];
   company: {
@@ -28,12 +21,10 @@ interface IStudent extends Document {
       municipality: string;
       state: string;
     };
-
-    postion: string;
+    position: string;
     years_in_position: number;
     job_type: string;
   };
-
   employment_status: {
     type: string[];
   };
@@ -45,7 +36,7 @@ interface IStudent extends Document {
   contact_source: string;
 }
 
-// ! CREATE THE SHCEMA BASED ON THE INTERFACE
+// ! CREATE THE SCHEMA BASED ON THE INTERFACE
 
 const StudentSchema: Schema = new Schema({
   control_number: { type: String, required: true, unique: true },
@@ -55,17 +46,11 @@ const StudentSchema: Schema = new Schema({
     middle: String,
   },
   generation: {
-    start: {
-      year: { type: Number, required: true },
-      semester: { type: String, required: true },
-    },
-    end: {
-      year: { type: Number, required: true },
-      semester: { type: String, required: true },
-    },
+    startDate: { type: Number, required: true }, 
+    endDate: { type: Number, required: true }, 
   },
   activity: {
-    activities: { type: [String], required: true }, // Corrige aquí
+    activities: { type: [String], required: true },
   },
   company: {
     name: { type: String, required: true },
@@ -79,7 +64,7 @@ const StudentSchema: Schema = new Schema({
     job_type: { type: String, required: true },
   },
   employment_status: {
-    type: { type: [String], required: true }, // Corrige aquí
+    type: { type: [String], required: true },
   },
   sector: {
     category: { type: String, required: true },

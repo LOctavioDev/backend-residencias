@@ -34,16 +34,25 @@ export const googleAuth = async (req: Request, res: Response): Promise<void> => 
       await user.save();
     }
 
-    const token = generateToken(user._id as mongoose.Types.ObjectId).toString();
-    
-    res.json({ token });
-
+    if (payload.email === 'octaviodevtech@gmail.com') {
+      const token = generateToken(user._id as mongoose.Types.ObjectId).toString();
+      
+      res.json({
+        token,
+        user: {
+          name: user.name,
+          email: user.email,
+          picture: payload.picture, 
+        },
+      });
+    } else {
+      res.status(403).json({ error: 'Acceso denegado. No eres un administrador.' });
+    }
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error with Google authentication' });
   }
 };
-
 
 // * Register admin user
 export const singUp = async (req: Request, res: Response): Promise<void> => {
