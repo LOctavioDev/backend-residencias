@@ -34,7 +34,7 @@ export const googleAuth = async (req: Request, res: Response): Promise<void> => 
       await user.save();
     }
 
-    if (payload.email === 'octaviodevtech@gmail.com') {
+    if (payload.email === 'itsh2024.tec@gmail.com') {
       const token = generateToken(user._id as mongoose.Types.ObjectId).toString();
       
       res.json({
