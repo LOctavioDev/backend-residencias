@@ -69,7 +69,7 @@ export const singUp = async (req: Request, res: Response): Promise<void> => {
 
 // * Login user
 export const singIn = async (req: Request, res: Response): Promise<void> => {
-  const { email, password } = req.body;
+  const { email } = req.body;
 
   try {
     const user: IUser | null = await User.findOne({ email });
@@ -78,16 +78,16 @@ export const singIn = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    if (!user.comparePassword) {
-      res.status(400).json({ error: 'User does not have a password' });
-      return;
-    }
+    // if (!user.comparePassword) {
+    //   res.status(400).json({ error: 'User does not have a password' });
+    //   return;
+    // }
 
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
-      res.status(400).json({ error: 'Incorrect password or username' });
-      return;
-    }
+    // const isMatch = await user.comparePassword(password);
+    // if (!isMatch) {
+    //   res.status(400).json({ error: 'Incorrect password or username' });
+    //   return;
+    // }
 
     const token = generateToken(user._id as mongoose.Types.ObjectId).toString();
 

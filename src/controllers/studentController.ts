@@ -57,6 +57,16 @@ export const getStudentsByControlNumber = async (
   }
 };
 
+// * DELETE ALL STUDENTS
+export const deleteAllStudents = async (req: Request, res: Response): Promise<void> => {
+  try {
+    await Student.deleteMany({}); 
+    res.status(200).json({ message: 'Todos los estudiantes han sido eliminados.' });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // * UPDATE A STUDENT BY CONTROL NUMBER
 export const updateStudent = async (req: Request, res: Response): Promise<void> => {
   const { control_number } = req.params; 
@@ -95,13 +105,20 @@ export const getStudentsByGeneration = async (
   try {
     const students = await Student.aggregate([
       {
+        $addFields: {
+          endYear: {
+            $year: { $toDate: { $multiply: ['$generation.endDate', 1000] } }, 
+          },
+        },
+      },
+      {
         $group: {
-          _id: { year: '$generation.start.year' },
+          _id: { year: '$endYear' }, 
           count: { $sum: 1 },
         },
       },
       {
-        $sort: { '_id.year': 1 },
+        $sort: { '_id.year': 1 }, 
       },
     ]);
 
@@ -111,12 +128,14 @@ export const getStudentsByGeneration = async (
   }
 };
 
+
+
 export const getJobTypeData = async (req: Request, res: Response): Promise<void> => {
   try {
     const jobTypeCounts = await Student.aggregate([
       {
         $group: {
-          _id: '$company.job_type',
+          _id: '$sector',
           count: { $sum: 1 },
         },
       },
@@ -140,7 +159,7 @@ export const getStudentsByCity = async (req: Request, res: Response): Promise<vo
     const students = await Student.aggregate([
       {
         $group: {
-          _id: '$company.location.city',
+          _id: '$company.location.state',
           count: { $sum: 1 },
         },
       },

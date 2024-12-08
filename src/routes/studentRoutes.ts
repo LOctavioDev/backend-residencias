@@ -6,7 +6,8 @@ import {
   getStudentsByCity,
   getStudentsByGeneration,
   getJobTypeData,
-  updateStudent
+  updateStudent,
+  deleteAllStudents
 } from '../controllers/studentController';
 import { verifyToken } from '../utils/verifyToken';
 
@@ -16,6 +17,7 @@ router.get('/', verifyToken, getAllStudents);
 router.get('/:control_number', verifyToken, getStudentsByControlNumber);
 router.post('/', verifyToken, createStudent);
 router.put('/:control_number', verifyToken, updateStudent);
+router.delete('/all', verifyToken, deleteAllStudents);
 
 router.get('/students/city', verifyToken, getStudentsByCity);
 router.get('/students/generation', verifyToken, getStudentsByGeneration);

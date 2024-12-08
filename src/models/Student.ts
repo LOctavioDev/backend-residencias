@@ -1,9 +1,9 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 // ! DEFINE THE INTERFACE FOR THE STUDENT DOCUMENT
-
 interface IStudent extends Document {
   control_number: string;
+  career: string;
   name: {
     first: string;
     last: string;
@@ -13,6 +13,8 @@ interface IStudent extends Document {
     startDate: number;
     endDate: number;
   };
+  email: string;
+  discharge_date: number;
   activity: string[];
   company: {
     name: string;
@@ -23,16 +25,14 @@ interface IStudent extends Document {
     };
     position: string;
     years_in_position: number;
-    job_type: string;
+    hierarchical_level: string;
   };
-  employment_status: {
-    type: string[];
-  };
-  sector: {
-    category: string;
+  working_condition: {
     type: string;
   };
-  participation: string;
+  sector: string;
+  institution: string;
+  profile: string;
   contact_source: string;
 }
 
@@ -40,15 +40,18 @@ interface IStudent extends Document {
 
 const StudentSchema: Schema = new Schema({
   control_number: { type: String, required: true, unique: true },
+  career: { type: String, required: true },
   name: {
     first: { type: String, required: true },
     last: { type: String, required: true },
     middle: String,
   },
   generation: {
-    startDate: { type: Number, required: true }, 
-    endDate: { type: Number, required: true }, 
+    startDate: { type: Number, required: true },
+    endDate: { type: Number, required: true },
   },
+  email: { type: String, required: true, unique: true },
+  discharge_date: { type: Number, required: false },
   activity: {
     activities: { type: [String], required: true },
   },
@@ -61,16 +64,14 @@ const StudentSchema: Schema = new Schema({
     },
     position: { type: String, required: true },
     years_in_position: { type: Number, required: true },
-    job_type: { type: String, required: true },
+    hierarchical_level: { type: String, required: true },
   },
-  employment_status: {
-    type: { type: [String], required: true },
-  },
-  sector: {
-    category: { type: String, required: true },
+  working_condition: {
     type: { type: String, required: true },
   },
-  participation: { type: String, required: true },
+  sector: { type: String, required: true },
+  institution: { type: String, required: true },
+  profile: { type: String, required: true },
   contact_source: { type: String, required: true },
 });
 
