@@ -23,26 +23,26 @@ export const googleAuth = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    let user: IUser | null = await User.findOne({ email: payload.email });
+    if (payload.email === process.env.ADMIN_EMAIL) {
+      let user: IUser | null = await User.findOne({ email: payload.email });
 
-    if (!user) {
-      user = new User({
-        email: payload.email,
-        name: payload.name,
-        googleId: payload.sub,
-      });
-      await user.save();
-    }
+      if (!user) {
+        user = new User({
+          email: payload.email,
+          name: payload.name,
+          googleId: payload.sub,
+        });
+        await user.save();
+      }
 
-    if (payload.email === 'itsh2024.tec@gmail.com') {
       const token = generateToken(user._id as mongoose.Types.ObjectId).toString();
-      
+
       res.json({
         token,
         user: {
           name: user.name,
           email: user.email,
-          picture: payload.picture, 
+          picture: payload.picture,
         },
       });
     } else {
@@ -55,6 +55,25 @@ export const googleAuth = async (req: Request, res: Response): Promise<void> => 
 };
 
 // * Register admin user
+
+export const createAdminUser = async (req: Request, res: Response): Promise<void> => {
+  const { email, password, name } = req.body;
+
+  try {
+    const isUser = await User.findOne({ email });
+    if (isUser) {
+      res.status(400).json({ error: 'User already exists' });
+    }
+
+    const user = new User({ email, password, name });
+    await user.save();
+    res.status(201).json({ message: 'Admin user created' });
+  } catch (error) {
+    res.status(400).json({ error: 'Error creating admin user' });
+  }
+};
+
+// * Register  user
 export const singUp = async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body;
 

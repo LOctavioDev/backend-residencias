@@ -3,9 +3,11 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import morgan from 'morgan';
 
 import connectDB from './config/db';
 import config from './config/config';
+import logger from './logger';
 
 import authRoutes from './routes/authRoutes';
 import studentRoutes from './routes/studentRoutes';
@@ -16,6 +18,13 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(
+  morgan('combined', {
+    stream: {
+      write: (message: any) => logger.info(message.trim()),
+    },
+  })
+);
 connectDB();
 
 // ? Routes auth
@@ -31,5 +40,5 @@ app.get('/', (req, res) => {
 
 // ? Start server
 app.listen(config.port, () => {
-  console.log(`Server running on port: http://localhost:${config.port}`);
+  logger.info(`Server running on port ${config.port}`);
 });
