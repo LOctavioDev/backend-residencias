@@ -60,7 +60,7 @@ export const getStudentsByControlNumber = async (
 // * DELETE ALL STUDENTS
 export const deleteAllStudents = async (req: Request, res: Response): Promise<void> => {
   try {
-    await Student.deleteMany({}); 
+    await Student.deleteMany({});
     res.status(200).json({ message: 'Todos los estudiantes han sido eliminados.' });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
@@ -69,16 +69,16 @@ export const deleteAllStudents = async (req: Request, res: Response): Promise<vo
 
 // * UPDATE A STUDENT BY CONTROL NUMBER
 export const updateStudent = async (req: Request, res: Response): Promise<void> => {
-  const { control_number } = req.params; 
-  const updatedData = req.body; 
+  const { control_number } = req.params;
+  const updatedData = req.body;
 
   try {
     const updatedStudent = await Student.findOneAndUpdate(
-      { control_number }, 
+      { control_number },
       updatedData,
       {
-        new: true, 
-        runValidators: true, 
+        new: true,
+        runValidators: true,
       }
     );
 
@@ -107,18 +107,18 @@ export const getStudentsByGeneration = async (
       {
         $addFields: {
           endYear: {
-            $year: { $toDate: { $multiply: ['$generation.endDate', 1000] } }, 
+            $year: { $toDate: { $multiply: ['$generation.endDate', 1000] } },
           },
         },
       },
       {
         $group: {
-          _id: { year: '$endYear' }, 
+          _id: { year: '$endYear' },
           count: { $sum: 1 },
         },
       },
       {
-        $sort: { '_id.year': 1 }, 
+        $sort: { '_id.year': 1 },
       },
     ]);
 
@@ -127,8 +127,6 @@ export const getStudentsByGeneration = async (
     res.status(500).json({ error: error.message });
   }
 };
-
-
 
 export const getJobTypeData = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -166,6 +164,76 @@ export const getStudentsByCity = async (req: Request, res: Response): Promise<vo
     ]);
 
     res.status(200).json(students);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getStudentsByActivity = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const students = await Student.aggregate([
+      {
+        $facet: {
+          // Filtrar los estudiantes que trabajan
+          working: [
+            {
+              $match: {
+                'activity.activities': {
+                  $elemMatch: { $in: ['trabaja', 'estudia y trabaja'] },
+                },
+              },
+            },
+            { $count: 'count' },
+          ],
+          // Filtrar los estudiantes que no trabajan
+          notWorking: [
+            {
+              $match: {
+                'activity.activities': {
+                  $elemMatch: { $in: ['no trabaja'] },
+                },
+              },
+            },
+            { $count: 'count' },
+          ],
+          // Filtrar los estudiantes que estudian
+          studying: [
+            {
+              $match: {
+                'activity.activities': {
+                  $elemMatch: { $in: ['estudia', 'estudia y trabaja'] },
+                },
+              },
+            },
+            { $count: 'count' },
+          ],
+          // Filtrar los estudiantes que no estudian
+          notStudying: [
+            {
+              $match: {
+                'activity.activities': {
+                  $elemMatch: { $in: ['no trabaja', 'no estudia ni trabaja'] },
+                },
+              },
+            },
+            { $count: 'count' },
+          ],
+        },
+      },
+      {
+        $project: {
+          working: { $arrayElemAt: ['$working.count', 0] },
+          notWorking: { $arrayElemAt: ['$notWorking.count', 0] },
+          studying: { $arrayElemAt: ['$studying.count', 0] },
+          notStudying: { $arrayElemAt: ['$notStudying.count', 0] },
+        },
+      },
+    ]);
+
+    res.status(200).json(students[0]);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
