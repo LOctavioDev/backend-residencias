@@ -26,7 +26,16 @@ interface IStudent extends Document {
     position: string;
     years_in_position: number;
     hierarchical_level: string;
+    startDate: number;
+    endDate: number;
   };
+  companyHistory: [
+    {
+      name: string;
+      startDate: number;
+      endDate: number;
+    }
+  ];
   working_condition: {
     type: string;
   };
@@ -34,6 +43,7 @@ interface IStudent extends Document {
   institution: string;
   profile: string;
   contact_source: string;
+  updatedAt: string;
 }
 
 // ! CREATE THE SCHEMA BASED ON THE INTERFACE
@@ -63,9 +73,18 @@ const StudentSchema: Schema = new Schema({
       state: { type: String, required: true },
     },
     position: { type: String, required: true },
-    years_in_position: { type: Number, required: true },
+    years_in_position: { type: Number, required: false },
     hierarchical_level: { type: String, required: true },
+    startDateC: { type: Number, required: false },
+    endDateC: { type: Number, required: false },
   },
+  companyHistory: [
+    {
+      name: { type: String, required: false },
+      startDateH: { type: Number, required: false },
+      endDateH: { type: Number, required: false },
+    },
+  ],
   working_condition: {
     type: { type: String, required: true },
   },
@@ -73,6 +92,7 @@ const StudentSchema: Schema = new Schema({
   institution: { type: String, required: true },
   profile: { type: String, required: true },
   contact_source: { type: String, required: true },
+  updatedAt: { type: String, required: true },
 });
 
 const Student = mongoose.model<IStudent>('Student', StudentSchema);

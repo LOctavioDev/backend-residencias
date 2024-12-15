@@ -39,6 +39,27 @@ export const getStudent = async (req: Request, res: Response) => {
   }
 };
 
+// * GET SINGLE STUDENT'S COMPANY HISTORY
+export const getStudentCompanyHistory = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { control_number } = req.params;
+    const student = await Student.findOne({ control_number: control_number });
+
+    if (!student) {
+      res.status(404).json({ error: 'Estudiante no encontrado' });
+      return;
+    }
+
+    // Retornar solo el historial de empresas
+    res.status(200).json(student.companyHistory);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // * GET STUDENT BY CONTROL NUMBER
 export const getStudentsByControlNumber = async (
   req: Request,
@@ -87,10 +108,100 @@ export const updateStudent = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-    // Devolver el estudiante actualizado
     res.status(200).json(updatedStudent);
   } catch (error: any) {
     console.log(error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// * ADD TO COMPANY HISTORY
+export const addCompanyToHistory = async (req: Request, res: Response): Promise<void> => {
+  const { control_number } = req.params;
+  const newCompany = req.body;
+
+  try {
+    const updatedStudent = await Student.findOneAndUpdate(
+      { control_number },
+      { $push: { companyHistory: newCompany } },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedStudent) {
+      res.status(404).json({ error: 'Estudiante no encontrado' });
+      return;
+    }
+
+    res.status(200).json(updatedStudent);
+  } catch (error: any) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// * EDIT COMPANY IN HISTORY
+export const editCompanyInHistory = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { control_number } = req.params;
+  const { companyIndex, updatedCompany } = req.body;
+
+  try {
+    const student = await Student.findOne({ control_number });
+
+    if (!student) {
+      res.status(404).json({ error: 'Estudiante no encontrado' });
+      return;
+    }
+
+    if (!student.companyHistory[companyIndex]) {
+      res.status(400).json({ error: 'Índice de empresa inválido' });
+      return;
+    }
+
+    student.companyHistory[companyIndex] = {
+      ...student.companyHistory[companyIndex],
+      ...updatedCompany,
+    };
+
+    await student.save();
+
+    res.status(200).json(student);
+  } catch (error: any) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// * DELETE COMPANY FROM HISTORY
+export const deleteCompanyFromHistory = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { control_number } = req.params;
+  const { companyIndex } = req.body;
+
+  try {
+    const student = await Student.findOne({ control_number });
+
+    if (!student) {
+      res.status(404).json({ error: 'Estudiante no encontrado' });
+      return;
+    }
+
+    if (companyIndex < 0 || companyIndex >= student.companyHistory.length) {
+      res.status(400).json({ error: 'Índice de empresa inválido' });
+      return;
+    }
+
+    student.companyHistory.splice(companyIndex, 1);
+
+    await student.save();
+
+    res.status(200).json(student);
+  } catch (error: any) {
+    console.error(error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -152,16 +263,31 @@ export const getJobTypeData = async (req: Request, res: Response): Promise<void>
 };
 
 // * GET NUMBER OF STUDENTS BY CITY
+// * GET NUMBER OF STUDENTS BY CITY
 export const getStudentsByCity = async (req: Request, res: Response): Promise<void> => {
+  const { city } = req.query;
+
   try {
-    const students = await Student.aggregate([
-      {
-        $group: {
-          _id: '$company.location.state',
-          count: { $sum: 1 },
+    const pipeline: any[] = [];
+
+    if (city) {
+      pipeline.push({
+        $match: {
+          'company.location.state': {
+            $regex: new RegExp(`^${city}$`, 'i'),
+          },
         },
+      });
+    }
+
+    pipeline.push({
+      $group: {
+        _id: '$company.location.state',
+        count: { $sum: 1 },
       },
-    ]);
+    });
+
+    const students = await Student.aggregate(pipeline);
 
     res.status(200).json(students);
   } catch (error: any) {
@@ -177,7 +303,6 @@ export const getStudentsByActivity = async (
     const students = await Student.aggregate([
       {
         $facet: {
-          // Filtrar los estudiantes que trabajan
           working: [
             {
               $match: {
@@ -188,7 +313,6 @@ export const getStudentsByActivity = async (
             },
             { $count: 'count' },
           ],
-          // Filtrar los estudiantes que no trabajan
           notWorking: [
             {
               $match: {
@@ -199,7 +323,6 @@ export const getStudentsByActivity = async (
             },
             { $count: 'count' },
           ],
-          // Filtrar los estudiantes que estudian
           studying: [
             {
               $match: {
@@ -210,7 +333,6 @@ export const getStudentsByActivity = async (
             },
             { $count: 'count' },
           ],
-          // Filtrar los estudiantes que no estudian
           notStudying: [
             {
               $match: {
