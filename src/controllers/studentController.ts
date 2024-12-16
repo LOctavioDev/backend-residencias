@@ -53,7 +53,6 @@ export const getStudentCompanyHistory = async (
       return;
     }
 
-    // Retornar solo el historial de empresas
     res.status(200).json(student.companyHistory);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
@@ -73,6 +72,17 @@ export const getStudentsByControlNumber = async (
     }
 
     res.status(200).json(student);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// * DELETE A STUDENT by CONTROL NUMBER
+export const deleteStudent = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { control_number } = req.params;
+    await Student.findOneAndDelete({ control_number });
+    res.status(200).json({ message: 'Estudiante eliminado' });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -263,31 +273,25 @@ export const getJobTypeData = async (req: Request, res: Response): Promise<void>
 };
 
 // * GET NUMBER OF STUDENTS BY CITY
-// * GET NUMBER OF STUDENTS BY CITY
 export const getStudentsByCity = async (req: Request, res: Response): Promise<void> => {
-  const { city } = req.query;
-
   try {
-    const pipeline: any[] = [];
-
-    if (city) {
-      pipeline.push({
-        $match: {
-          'company.location.state': {
-            $regex: new RegExp(`^${city}$`, 'i'),
-          },
+    const pipeline: any[] = [
+      {
+        $group: {
+          _id: '$company.location.state',
+          count: { $sum: 1 },
         },
-      });
-    }
-
-    pipeline.push({
-      $group: {
-        _id: '$company.location.state',
-        count: { $sum: 1 },
       },
-    });
+      {
+        $sort: { count: -1 },
+      },
+    ];
 
     const students = await Student.aggregate(pipeline);
+
+    if (students.length === 0) {
+      res.status(404).json({ message: 'No students found.' });
+    }
 
     res.status(200).json(students);
   } catch (error: any) {

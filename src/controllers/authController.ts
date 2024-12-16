@@ -23,25 +23,26 @@ export const googleAuth = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    if (payload.email === process.env.ADMIN_EMAIL) {
-      let user: IUser | null = await User.findOne({ email: payload.email });
+    const admin = await User.findOne({ isAdmin: true });
 
-      if (!user) {
-        user = new User({
-          email: payload.email,
-          name: payload.name,
-          googleId: payload.sub,
-        });
-        await user.save();
-      }
+    if (!admin) {
+      res
+        .status(500)
+        .json({ error: 'No hay un administrador registrado en el sistema.' });
+      return;
+    }
 
-      const token = generateToken(user._id as mongoose.Types.ObjectId).toString();
+    if (payload.email === admin.email) {
+      admin.googleId = payload.sub;
+      await admin.save();
+
+      const token = generateToken(admin._id as mongoose.Types.ObjectId).toString();
 
       res.json({
         token,
         user: {
-          name: user.name,
-          email: user.email,
+          name: admin.name,
+          email: admin.email,
           picture: payload.picture,
         },
       });
@@ -51,6 +52,32 @@ export const googleAuth = async (req: Request, res: Response): Promise<void> => 
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error with Google authentication' });
+  }
+};
+
+// * Update admin
+export const updateAdmin = async (req: Request, res: Response): Promise<void> => {
+  const { email, name } = req.body;
+
+  try {
+    const admin = await User.findOne({ isAdmin: true });
+
+    if (!admin) {
+      res
+        .status(500)
+        .json({ error: 'No hay un administrador registrado en el sistema.' });
+      return;
+    }
+
+    if (email) admin.email = email;
+    if (name) admin.name = name;
+
+    await admin.save();
+
+    res.json({ message: 'Administrador actualizado con éxito.', admin });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al actualizar al administrador.' });
   }
 };
 
