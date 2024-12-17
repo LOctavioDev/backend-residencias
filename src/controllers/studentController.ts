@@ -275,6 +275,14 @@ export const getJobTypeData = async (req: Request, res: Response): Promise<void>
 // * GET NUMBER OF STUDENTS BY CITY
 export const getStudentsByCity = async (req: Request, res: Response): Promise<void> => {
   try {
+
+    const totalStudents = await Student.countDocuments();
+
+    if (totalStudents === 0) {
+      res.status(404).json({ message: 'No students found.' });
+    }
+
+
     const pipeline: any[] = [
       {
         $group: {
@@ -285,13 +293,18 @@ export const getStudentsByCity = async (req: Request, res: Response): Promise<vo
       {
         $sort: { count: -1 },
       },
+      {
+        $project: {
+          city: '$_id',
+          count: 1,
+          percentage: {
+            $round: [{ $multiply: [{ $divide: ['$count', totalStudents] }, 100] }, 2], 
+          },
+        },
+      },
     ];
 
     const students = await Student.aggregate(pipeline);
-
-    if (students.length === 0) {
-      res.status(404).json({ message: 'No students found.' });
-    }
 
     res.status(200).json(students);
   } catch (error: any) {
@@ -359,7 +372,42 @@ export const getStudentsByActivity = async (
       },
     ]);
 
-    res.status(200).json(students[0]);
+    // Calcular el total de estudiantes
+    const totalStudents =
+      students[0].working +
+      students[0].notWorking +
+      students[0].studying +
+      students[0].notStudying;
+
+    // Agregar los porcentajes
+    const response = {
+      working: {
+        count: students[0].working || 0,
+        percentage: totalStudents
+          ? ((students[0].working / totalStudents) * 100).toFixed(2)
+          : '0',
+      },
+      notWorking: {
+        count: students[0].notWorking || 0,
+        percentage: totalStudents
+          ? ((students[0].notWorking / totalStudents) * 100).toFixed(2)
+          : '0',
+      },
+      studying: {
+        count: students[0].studying || 0,
+        percentage: totalStudents
+          ? ((students[0].studying / totalStudents) * 100).toFixed(2)
+          : '0',
+      },
+      notStudying: {
+        count: students[0].notStudying || 0,
+        percentage: totalStudents
+          ? ((students[0].notStudying / totalStudents) * 100).toFixed(2)
+          : '0',
+      },
+    };
+
+    res.status(200).json(response);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
