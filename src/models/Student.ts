@@ -138,7 +138,7 @@ const StudentSchema: Schema = new Schema({
   profile: { type: String, required: true },
   contact_source: { type: String, required: true },
   studentAt: { type: String, required: true },
-  updatedAt: { type: Date, required: true },
+  updatedAt: { type: Date, required: true, default: Date.now },
 });
 
 const Student = mongoose.model<IStudent>('Student', StudentSchema);

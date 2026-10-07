@@ -55,6 +55,43 @@ export const googleAuth = async (req: Request, res: Response): Promise<void> => 
   }
 };
 
+// * Login admin with email and password
+export const login = async (req: Request, res: Response): Promise<void> => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    res.status(400).json({ error: 'Correo y contraseña son obligatorios.' });
+    return;
+  }
+
+  try {
+    const user: IUser | null = await User.findOne({ email });
+
+    if (!user || !user.password || !(await user.comparePassword!(password))) {
+      res.status(401).json({ error: 'Correo o contraseña incorrectos.' });
+      return;
+    }
+
+    if (!user.isAdmin) {
+      res.status(403).json({ error: 'Acceso denegado. No eres un administrador.' });
+      return;
+    }
+
+    const token = generateToken(user._id as mongoose.Types.ObjectId).toString();
+
+    res.json({
+      token,
+      user: {
+        name: user.name,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al iniciar sesión.' });
+  }
+};
+
 // * Update admin
 export const updateAdmin = async (req: Request, res: Response): Promise<void> => {
   const { email, name } = req.body;

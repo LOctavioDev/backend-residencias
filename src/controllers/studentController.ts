@@ -280,6 +280,7 @@ export const getStudentsByCity = async (req: Request, res: Response): Promise<vo
 
     if (totalStudents === 0) {
       res.status(404).json({ message: 'No students found.' });
+      return;
     }
 
 
